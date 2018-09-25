@@ -186,7 +186,7 @@ declare module Mobile {
 	/**
 	 * Describes methods for providing device logs to a specific consumer.
 	 */
-	interface IDeviceLogProvider {
+	interface IDeviceLogProvider extends NodeJS.EventEmitter {
 		/**
 		 * Logs data in the specific way for the consumer.
 		 * @param {string} line String from the device logs.

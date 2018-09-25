@@ -8,7 +8,7 @@ export class IOSDebuggerPortService implements IIOSDebuggerPortService {
 	private static MIN_REQUIRED_FRAMEWORK_VERSION = "4.0.1";
 	private static DEFAULT_TIMEOUT_IN_SECONDS = 10;
 
-	constructor(private $iOSLogParserService: IIOSLogParserService,
+	constructor(private $logParserService: ILogParserService,
 		private $iOSProjectService: IPlatformProjectService,
 		private $iOSNotification: IiOSNotification,
 		private $projectDataService: IProjectDataService,
@@ -46,8 +46,6 @@ export class IOSDebuggerPortService implements IIOSDebuggerPortService {
 
 		this.attachToDebuggerPortFoundEventCore();
 		this.attachToAttachRequestEvent(device, debugOptions);
-
-		await this.$iOSLogParserService.startParsingLog(device, projectData);
 	}
 
 	private canStartLookingForDebuggerPort(data: IProjectDir): boolean {
@@ -58,11 +56,23 @@ export class IOSDebuggerPortService implements IIOSDebuggerPortService {
 
 	@cache()
 	private attachToDebuggerPortFoundEventCore(): void {
-		this.$iOSLogParserService.on(DEBUGGER_PORT_FOUND_EVENT_NAME, (data: IIOSDebuggerPortData) => {
-			this.$logger.trace(DEBUGGER_PORT_FOUND_EVENT_NAME, data);
-			this.setData(data, { port: data.port });
-			this.clearTimeout(data);
+		this.$logParserService.addParseRule({
+			regex: /NativeScript debugger has opened inspector socket on port (\d+?) for (.*)[.]/,
+			handler: this.handlePortFound.bind(this),
+			name: "debugPort"
 		});
+	}
+
+	private handlePortFound(matches: RegExpMatchArray, deviceId: string): void {
+		const data = {
+			port: parseInt(matches[1]),
+			appId: matches[2],
+			deviceId,
+			projectDir: ""
+		};
+		
+		this.$logger.trace(DEBUGGER_PORT_FOUND_EVENT_NAME, data);
+		this.setData(data, { port: data.port });
 	}
 
 	@cache()
