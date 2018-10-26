@@ -120,10 +120,11 @@ export class AnalyticsService extends AnalyticsServiceBase {
 	@cache()
 	private getAnalyticsBroker(): Promise<ChildProcess> {
 		return new Promise<ChildProcess>((resolve, reject) => {
-			const broker = this.$childProcess.spawn("node",
+			const broker = this.$childProcess.spawn(process.execPath,
 				[
 					path.join(__dirname, "analytics-broker-process.js"),
-					this.$staticConfig.PATH_TO_BOOTSTRAP
+					this.$staticConfig.PATH_TO_BOOTSTRAP,
+					this.$options.analyticsLogFile
 				],
 				{
 					stdio: ["ignore", "ignore", "ignore", "ipc"],
