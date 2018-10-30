@@ -189,11 +189,9 @@ export class LiveSyncService extends EventEmitter implements IDebugLiveSyncServi
 		debugOptions = debugOptions || {};
 
 		const deviceIdentifier = liveSyncResultInfo.deviceAppData.device.deviceInfo.identifier;
-		await this.$debugService.debugStop(deviceIdentifier);
-		this.emit(DEBUGGER_DETACHED_EVENT_NAME, { deviceIdentifier });
-
-
 		if (debugOptions.debugBrk) {
+			await this.$debugService.debugStop(deviceIdentifier);
+			this.emit(DEBUGGER_DETACHED_EVENT_NAME, { deviceIdentifier });
 			const applicationId = deviceAppData.appIdentifier;
 			try {
 				await deviceAppData.device.applicationManager.stopApplication({ appId: applicationId, projectName: projectData.projectName });
@@ -205,7 +203,10 @@ export class LiveSyncService extends EventEmitter implements IDebugLiveSyncServi
 			await this.refreshApplicationWithoutDebug(projectData, liveSyncResultInfo, debugOptions, outputPath, { shouldSkipEmitLiveSyncNotification: true });
 		}
 
+		// we do not stop the application when debugBrk is false, so we need to attach, instead of launch
+		// if we try to send the launch request, the debugger port will not be printed and the command will timeout
 		debugOptions.start = !debugOptions.debugBrk;
+
 		const deviceOption = {
 			deviceIdentifier: liveSyncResultInfo.deviceAppData.device.deviceInfo.identifier,
 			debugOptions: debugOptions,
@@ -552,6 +553,7 @@ export class LiveSyncService extends EventEmitter implements IDebugLiveSyncServi
 
 				await this.$platformService.trackActionForPlatform({ action: "LiveSync", platform: device.deviceInfo.platform, isForDevice: !device.isEmulator, deviceOsVersion: device.deviceInfo.version });
 				await this.refreshApplication(projectData, liveSyncResultInfo, deviceBuildInfoDescriptor.debugOptions, deviceBuildInfoDescriptor.outputPath);
+
 				this.$logger.info(`Successfully synced application ${liveSyncResultInfo.deviceAppData.appIdentifier} on device ${liveSyncResultInfo.deviceAppData.device.deviceInfo.identifier}.`);
 
 				this.emitLivesyncEvent(LiveSyncEvents.liveSyncStarted, {
