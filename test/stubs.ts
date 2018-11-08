@@ -275,7 +275,7 @@ export class ProjectDataStub implements IProjectData {
 
 	public initializeProjectData(projectDir?: string): void {
 		this.projectDir = this.projectDir || projectDir;
-		this.projectIdentifiers = { android: "", ios: ""};
+		this.projectIdentifiers = { android: "", ios: "" };
 		this.projectId = "";
 	}
 	public initializeProjectDataFromContent(): void {
@@ -429,7 +429,7 @@ export class PlatformsDataStub extends EventEmitter implements IPlatformsData {
 			normalizedPlatformName: "",
 			appDestinationDirectoryPath: "",
 			deviceBuildOutputPath: "",
-			getValidBuildOutputData: (buildOptions: IBuildOutputOptions) => ({ packageNames: []}),
+			getValidBuildOutputData: (buildOptions: IBuildOutputOptions) => ({ packageNames: [] }),
 			frameworkFilesExtensions: [],
 			relativeToFrameworkConfigurationFilePath: "",
 			fastLivesyncFileExtensions: []
@@ -582,7 +582,7 @@ function unexpected(msg: string): Error {
 	return err;
 }
 
-export class DebugServiceStub extends EventEmitter implements IPlatformDebugService {
+export class DebugServiceStub extends EventEmitter implements IDeviceDebugService {
 	public async debug(): Promise<string> {
 		return;
 	}
